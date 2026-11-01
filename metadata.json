@@ -1,0 +1,6 @@
+{
+  "name": "Happy Cappy",
+  "description": "Make Someone’s Day Special ❤️ - Create personalized, fun, interactive surprise greeting cards and share via a unique link.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

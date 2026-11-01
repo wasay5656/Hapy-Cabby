@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cards Collection Security Rules
+    match /cards/{cardId} {
+      
+      // 1. Allow reading an individual card by its specific unique ID.
+      // Card IDs are cryptographically random and hard-to-guess.
+      allow get: if true;
+
+      // 2. FORBID listing/enumerating all cards.
+      // This protects users' private messages and names from being scraped or browsed.
+      allow list: if false;
+
+      // 3. Allow creation with strict validation of fields, types, and lengths.
+      // Protects against injection, spamming large payloads, or malformed entries.
+      allow create: if request.resource.data.keys().hasAll(['id', 'occasion', 'receiverName', 'message', 'theme', 'createdAt'])
+        // String validations
+        && request.resource.data.receiverName is string
+        && request.resource.data.receiverName.size() > 0
+        && request.resource.data.receiverName.size() <= 60
+        && (!('senderName' in request.resource.data) || request.resource.data.senderName == null || (request.resource.data.senderName is string && request.resource.data.senderName.size() <= 60))
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 1500
+        // Enum validations
+        && request.resource.data.occasion in [
+          'birthday',
+          'love',
+          'anniversary',
+          'congratulations',
+          'sorry',
+          'thank_you',
+          'friendship',
+          'good_luck',
+          'just_because'
+        ]
+        && request.resource.data.theme in [
+          'rose_blush',
+          'golden_sparkle',
+          'lavender_dream',
+          'confetti_pop',
+          'mint_sunshine',
+          'midnight_magic'
+        ];
+
+      // 4. Disallow modifying or deleting existing cards.
+      // Once created, greeting cards are permanent and immutable.
+      allow update, delete: if false;
+    }
+
+    // Default deny all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
